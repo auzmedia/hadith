@@ -45,7 +45,7 @@
         .search-box { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card-bg); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 20px; }
         .search-box:focus { border-color: var(--gold-btn); }
 
-        /* Books List (Image Style) */
+        /* Books List */
         .books-list { display: flex; flex-direction: column; gap: 15px; }
         .book-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .book-main-info { display: flex; gap: 20px; align-items: center; }
@@ -102,21 +102,18 @@
 </div>
 
 <main>
-    <!-- 1. Kitoblar Ro'yxati -->
     <section id="viewBooks">
         <h1 class="page-title">Hadislar kutubxonasi</h1>
         <p class="page-subtitle" id="totalBooksStats">Mavjud sahih va mo'tabar to'plamlar</p>
         <div class="books-list" id="booksList"></div>
     </section>
 
-    <!-- 2. Boblar Ro'yxati -->
     <section id="viewChapters" class="hidden">
         <h1 class="page-title" id="chaptersBookTitle">Boblar</h1>
         <p class="page-subtitle">Kerakli bobni tanlang</p>
         <div class="chapters-grid" id="chaptersGrid"></div>
     </section>
 
-    <!-- 3. Hadislar Ro'yxati -->
     <section id="viewHadiths" class="hidden">
         <input type="text" id="searchInput" class="search-box" placeholder="Hadis matni yoki raqami bo'yicha izlash..." oninput="filterHadiths()">
         <h1 class="page-title" id="selectedBookTitle">Hadislar</h1>
@@ -130,7 +127,7 @@
 </main>
 
 <script>
-    const SITE_URL = "https://hadis.aloshiy.com"; // Saytingiz domeni
+    const SITE_URL = window.location.origin;
 
     const books = [
         { id: 1, nameUz: "Sahihul Buxoriy", author: "Imom Buxoriy", file: "db/by_book/the_9_books/bukhari.json", chaptersCount: 98, color: "#065f46" },
@@ -208,7 +205,6 @@
         }
     }
 
-    // Boblar ro'yxatini chiqarish
     function renderChaptersView() {
         document.getElementById('chaptersBookTitle').innerText = currentBook.nameUz + " — Boblar";
         const container = document.getElementById('chaptersGrid');
@@ -216,7 +212,6 @@
 
         let chaptersList = rawBookData.chapters || [];
 
-        // Agar JSONda alohida chapters bo'lmasa, hadislar ichidan chapterId larni ajratib olamiz
         if (chaptersList.length === 0) {
             const chapterIds = [...new Set(currentHadiths.map(h => h.chapterId))].sort((a,b) => a - b);
             chaptersList = chapterIds.map(id => ({ id: id, english: `Bob #${id}` }));
@@ -237,7 +232,6 @@
         updateBreadcrumb([currentBook.nameUz, 'Boblar']);
     }
 
-    // Muayyan Bob bosilganda o'sha bob hadislarini ko'rsatish
     function filterHadithsByChapter(chapterId) {
         filteredHadiths = currentHadiths.filter(h => h.chapterId === chapterId);
         document.getElementById('selectedBookTitle').innerText = `${currentBook.nameUz} — Bob ${chapterId}`;
@@ -251,7 +245,6 @@
         loadMore();
     }
 
-    // Barcha hadislarni birdaniga ko'rsatish ("O'qish" bosilganda)
     function showAllHadithsOfBook() {
         filteredHadiths = currentHadiths;
         document.getElementById('selectedBookTitle').innerText = currentBook.nameUz;
@@ -268,7 +261,8 @@
     function renderNextBatch(list) {
         const container = document.getElementById('hadithsList');
 
-        list.forEach(item => {
+        list.forEach((item, index) => {
+            const globalIndex = displayedCount - list.length + index; // Massivdagi indeks
             const card = document.createElement('div');
             card.className = 'hadith-card';
             
@@ -287,8 +281,8 @@
                     <div>${englishText}</div>
                 </div>
                 <div class="hadith-actions">
-                    <button class="action-btn" onclick="copyFormattedHadith('${item.bookHadithNo}', '${item.chapterId}', \`${escapeQuotes(arabicText)}\`, \`${escapeQuotes(englishText)}\`)">📋 Nusxalash</button>
-                    <button class="action-btn" onclick="shareHadith('${item.bookHadithNo}', '${item.chapterId}', \`${escapeQuotes(arabicText)}\`, \`${escapeQuotes(englishText)}\`)">🔗 Bo'lishish</button>
+                    <button class="action-btn" onclick="copyFormattedHadith(${globalIndex})">📋 Nusxalash</button>
+                    <button class="action-btn" onclick="shareHadith(${globalIndex})">🔗 Bo'lishish</button>
                 </div>
             `;
             container.appendChild(card);
@@ -308,26 +302,37 @@
         renderNextBatch(nextBatch);
     }
 
-    // Formatli matn yasash
-    function buildFormattedText(hadithNo, chapterId, arabic, english) {
-        return `${SITE_URL} - Hadislar\n\n${arabic}\n\n${english}\n\nManba: ${currentBook ? currentBook.author : 'Imom Buxoriy'}, ${currentBook ? currentBook.nameUz : 'Jomeus Sahih'}, Bob ${chapterId}, Hadis ${hadithNo}.`;
+    // Indeks orqali matnni xavfsiz olish
+    function buildFormattedTextByIndex(index) {
+        const item = filteredHadiths[index];
+        if (!item) return '';
+
+        const arabic = item.arabic || '';
+        const english = item.english?.text || (typeof item.english === 'string' ? item.english : '');
+        const narrator = item.english?.narrator ? item.english.narrator + '\n' : '';
+
+        return `${SITE_URL} - Hadislar\n\n${arabic}\n\n${narrator}${english}\n\nManba: ${currentBook ? currentBook.author : 'Imom Buxoriy'}, ${currentBook ? currentBook.nameUz : 'Jomeus Sahih'}, Bob ${item.chapterId || 1}, Hadis ${item.bookHadithNo}.`;
     }
 
-    // Nusxalash funksiyasi
-    function copyFormattedHadith(hadithNo, chapterId, arabic, english) {
-        const fullText = buildFormattedText(hadithNo, chapterId, arabic, english);
-        navigator.clipboard.writeText(fullText);
-        alert("Hadis matni va manbasi nusxalandi!");
+    // Nusxalash
+    function copyFormattedHadith(index) {
+        const fullText = buildFormattedTextByIndex(index);
+        navigator.clipboard.writeText(fullText).then(() => {
+            alert("Hadis matni va manbasi nusxalandi!");
+        }).catch(err => {
+            console.error("Nusxalashda xatolik:", err);
+        });
     }
 
-    // Bo'lishish funksiyasi (Web Share API)
-    async function shareHadith(hadithNo, chapterId, arabic, english) {
-        const fullText = buildFormattedText(hadithNo, chapterId, arabic, english);
+    // Bo'lishish
+    async function shareHadith(index) {
+        const item = filteredHadiths[index];
+        const fullText = buildFormattedTextByIndex(index);
         
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `${currentBook?.nameUz} — Hadis #${hadithNo}`,
+                    title: `${currentBook?.nameUz} — Hadis #${item?.bookHadithNo}`,
                     text: fullText,
                     url: SITE_URL
                 });
@@ -335,7 +340,7 @@
                 console.log("Ulashish bekor qilindi");
             }
         } else {
-            copyFormattedHadith(hadithNo, chapterId, arabic, english);
+            copyFormattedHadith(index);
         }
     }
 
@@ -357,10 +362,6 @@
 
         document.getElementById('totalCount').innerText = `Topildi: ${filteredHadiths.length} ta hadis`;
         loadMore();
-    }
-
-    function escapeQuotes(str) {
-        return str ? str.replace(/`/g, "\\`").replace(/\${/g, "\\${") : '';
     }
 
     function showView(viewId) {
