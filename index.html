@@ -262,7 +262,7 @@
         const container = document.getElementById('hadithsList');
 
         list.forEach((item, index) => {
-            const globalIndex = displayedCount - list.length + index; // Massivdagi indeks
+            const currentIndex = displayedCount - list.length + index;
             const card = document.createElement('div');
             card.className = 'hadith-card';
             
@@ -281,8 +281,8 @@
                     <div>${englishText}</div>
                 </div>
                 <div class="hadith-actions">
-                    <button class="action-btn" onclick="copyFormattedHadith(${globalIndex})">📋 Nusxalash</button>
-                    <button class="action-btn" onclick="shareHadith(${globalIndex})">🔗 Bo'lishish</button>
+                    <button class="action-btn" onclick="copyFormattedHadith(${currentIndex})">📋 Nusxalash</button>
+                    <button class="action-btn" onclick="shareHadith(${currentIndex})">🔗 Bo'lishish</button>
                 </div>
             `;
             container.appendChild(card);
@@ -302,7 +302,6 @@
         renderNextBatch(nextBatch);
     }
 
-    // Indeks orqali matnni xavfsiz olish
     function buildFormattedTextByIndex(index) {
         const item = filteredHadiths[index];
         if (!item) return '';
@@ -311,12 +310,16 @@
         const english = item.english?.text || (typeof item.english === 'string' ? item.english : '');
         const narrator = item.english?.narrator ? item.english.narrator + '\n' : '';
 
-        return `${SITE_URL} - Hadislar\n\n${arabic}\n\n${narrator}${english}\n\nManba: ${currentBook ? currentBook.author : 'Imom Buxoriy'}, ${currentBook ? currentBook.nameUz : 'Jomeus Sahih'}, Bob ${item.chapterId || 1}, Hadis ${item.bookHadithNo}.`;
+        return `${SITE_URL} - Hadislar\n\n${arabic}\n\n${narrator}${english}\n\nManba: ${currentBook ? currentBook.author : ''}, ${currentBook ? currentBook.nameUz : ''}, Bob ${item.chapterId || 1}, Hadis ${item.bookHadithNo}.`;
     }
 
-    // Nusxalash
     function copyFormattedHadith(index) {
         const fullText = buildFormattedTextByIndex(index);
+        if (!fullText) {
+            alert("Hadis matni topilmadi!");
+            return;
+        }
+
         navigator.clipboard.writeText(fullText).then(() => {
             alert("Hadis matni va manbasi nusxalandi!");
         }).catch(err => {
@@ -324,20 +327,32 @@
         });
     }
 
-    // Bo'lishish
     async function shareHadith(index) {
         const item = filteredHadiths[index];
         const fullText = buildFormattedTextByIndex(index);
-        
-        if (navigator.share) {
+
+        if (!fullText) {
+            alert("Bo'lishish uchun hadis matni topilmadi!");
+            return;
+        }
+
+        const shareData = {
+            title: `${currentBook?.nameUz || 'Hadis'} — #${item?.bookHadithNo}`,
+            text: fullText
+        };
+
+        if (SITE_URL && SITE_URL.startsWith('http')) {
+            shareData.url = SITE_URL;
+        }
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             try {
-                await navigator.share({
-                    title: `${currentBook?.nameUz} — Hadis #${item?.bookHadithNo}`,
-                    text: fullText,
-                    url: SITE_URL
-                });
+                await navigator.share(shareData);
             } catch (err) {
-                console.log("Ulashish bekor qilindi");
+                if (err.name !== 'AbortError') {
+                    console.error("Ulashishda xatolik:", err);
+                    copyFormattedHadith(index);
+                }
             }
         } else {
             copyFormattedHadith(index);
