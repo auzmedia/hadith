@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadislar To'plami</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 15px; background: #f8fafc; color: #1e293b; }
+        .app-card { max-width: 900px; margin: 0 auto; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; color: #0f172a; margin-top: 0; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } }
+        select, input { padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+        select:focus, input:focus { border-color: #3b82f6; }
+        .hadith-list { display: flex; flex-direction: column; gap: 15px; }
+        .hadith-card { background: #f1f5f9; padding: 18px; border-radius: 8px; border-left: 4px solid #3b82f6; }
+        .hadith-num { font-weight: bold; color: #2563eb; font-size: 14px; margin-bottom: 8px; }
+        .hadith-text { line-height: 1.6; font-size: 16px; white-space: pre-wrap; }
+        .loading { text-align: center; padding: 20px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h1>📚 Hadislar To'plami</h1>
+    
+    <div class="controls">
+        <select id="bookSelect" onchange="loadBookData()">
+            <option value="">-- Kitobni tanlang --</option>
+            <option value="bukhari.json">Sahihi Buxoriy</option>
+            <option value="muslim.json">Sahihi Muslim</option>
+            <option value="abudawud.json">Sunani Abu Dovud</option>
+            <option value="tirmidhi.json">Sunani Termiziy</option>
+            <option value="nasai.json">Sunani Nasaiy</option>
+            <option value="ibnmajah.json">Sunani Ibn Majah</option>
+        </select>
+        
+        <input type="text" id="searchInput" placeholder="Hadis matni yoki raqamidan izlash..." oninput="filterHadiths()">
+    </div>
+
+    <div id="status" class="loading">O'qish uchun kitobni tanlang.</div>
+    <div id="hadithContainer" class="hadith-list"></div>
+</div>
+
+<script>
+    let currentHadiths = [];
+
+    async function loadBookData() {
+        const file = document.getElementById('bookSelect').value;
+        const container = document.getElementById('hadithContainer');
+        const status = document.getElementById('status');
+
+        container.innerHTML = '';
+        if (!file) {
+            status.innerText = "O'qish uchun kitobni tanlang.";
+            return;
+        }
+
+        status.innerText = "Hadislar yuklanmoqda...";
+
+        try {
+            const res = await fetch(file);
+            if (!res.ok) throw new Error("Fayl topilmadi");
+            const data = await res.json();
+            
+            // JSON strukturasini tekshirish va moslashtirish
+            currentHadiths = Array.isArray(data) ? data : (data.hadiths || Object.values(data));
+            
+            status.innerText = `Jami ${currentHadiths.length} ta hadis yuklandi.`;
+            renderHadiths(currentHadiths.slice(0, 50)); // Dastlabki 50 tasini ko'rsatish
+        } catch (err) {
+            status.innerText = "Xatolik: ushbu kitob fayli ildiz katalogida topilmadi.";
+        }
+    }
+
+    function renderHadiths(list) {
+        const container = document.getElementById('hadithContainer');
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = '<p style="text-align:center;">Hech narsa topilmadi.</p>';
+            return;
+        }
+
+        list.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'hadith-card';
+            
+            const num = item.id || item.number || item.hadithnumber || (index + 1);
+            const text = item.text || item.hadith || item.uz || JSON.stringify(item);
+
+            card.innerHTML = `
+                <div class="hadith-num">Hadis #${num}</div>
+                <div class="hadith-text">${text}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function filterHadiths() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        if (!query) {
+            renderHadiths(currentHadiths.slice(0, 50));
+            return;
+        }
+
+        const filtered = currentHadiths.filter(item => {
+            const text = (item.text || item.hadith || item.uz || '').toLowerCase();
+            const num = String(item.id || item.number || item.hadithnumber || '');
+            return text.includes(query) || num.includes(query);
+        });
+
+        renderHadiths(filtered.slice(0, 50));
+    }
+</script>
+
+</body>
+</html>
