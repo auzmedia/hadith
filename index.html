@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hadislar</title>
+    <title>Hadislar Kutubxonasi</title>
     <!-- Shriftlar -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,7 +93,7 @@
 
 <header>
     <div class="header-container">
-        <div class="logo" onclick="goHome()">📚 Hadislar</div>
+        <div class="logo" onclick="goHome()">📚 Hadislar kutubxonasi !</div>
     </div>
 </header>
 
@@ -127,7 +127,7 @@
 </main>
 
 <script>
-    const SITE_URL = window.location.origin;
+    const SITE_URL = "https://hadis.aloshiy.com";
 
     const books = [
         { id: 1, nameUz: "Sahihul Buxoriy", author: "Imom Buxoriy", file: "db/by_book/the_9_books/bukhari.json", chaptersCount: 98, color: "#065f46" },
@@ -302,15 +302,18 @@
         renderNextBatch(nextBatch);
     }
 
+    // Formatlangan matn tuzish
     function buildFormattedTextByIndex(index) {
         const item = filteredHadiths[index];
         if (!item) return '';
 
-        const arabic = item.arabic || '';
+        const authorName = currentBook ? currentBook.author : 'Hadis';
+        const bookName = currentBook ? currentBook.nameUz : '';
+        const arabic = item.arabic ? `${item.arabic}\n\n` : '';
         const english = item.english?.text || (typeof item.english === 'string' ? item.english : '');
         const narrator = item.english?.narrator ? item.english.narrator + '\n' : '';
 
-        return `${SITE_URL} - Hadislar\n\n${arabic}\n\n${narrator}${english}\n\nManba: ${currentBook ? currentBook.author : ''}, ${currentBook ? currentBook.nameUz : ''}, Bob ${item.chapterId || 1}, Hadis ${item.bookHadithNo}.`;
+        return `${authorName} #${item.bookHadithNo}\n\n${arabic}${narrator}${english}\n\nManba: ${bookName}, ${item.bookHadithNo}-hadis.\n\nVisit: ${SITE_URL}`;
     }
 
     function copyFormattedHadith(index) {
@@ -337,13 +340,9 @@
         }
 
         const shareData = {
-            title: `${currentBook?.nameUz || 'Hadis'} — #${item?.bookHadithNo}`,
+            title: `${currentBook?.author || 'Hadis'} #${item?.bookHadithNo}`,
             text: fullText
         };
-
-        if (SITE_URL && SITE_URL.startsWith('http')) {
-            shareData.url = SITE_URL;
-        }
 
         if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             try {
@@ -414,4 +413,5 @@
 </script>
 
 </body>
-</html>
+    </html>
+    
