@@ -3,89 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hadislar Kutubxonasi</title>
+    <title>Hadislar Portali — Sunnah.com uslubida</title>
+    <!-- Arabcha va Lotin shriftlari -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --primary: #0f172a; --accent: #2563eb; --bg: #f8fafc; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: #334155; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        header { background: var(--primary); color: white; padding: 15px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .breadcrumb { font-size: 14px; opacity: 0.9; margin-top: 5px; cursor: pointer; }
-        .breadcrumb span:hover { text-decoration: underline; }
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #065f46; /* Sunnah.com to'q yashil rangi */
+            --primary-light: #ecfdf5;
+            --border-color: #e2e8f0;
+            --accent: #d97706;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
 
-        main { max-width: 900px; width: 100%; margin: 20px auto; padding: 0 15px; flex: 1; }
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #10b981;
+            --primary-light: #064e3b;
+            --border-color: #334155;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
 
-        .search-box { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; font-size: 16px; outline: none; }
-        .search-box:focus { border-color: var(--accent); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background 0.2s, color 0.2s; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
-        .card h3 { color: var(--primary); margin-bottom: 5px; font-size: 18px; }
-        .card p { font-size: 13px; color: #64748b; }
+        /* Header */
+        header { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+        .header-container { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 22px; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .theme-toggle { background: none; border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; color: var(--text-main); font-size: 14px; }
 
-        .hadith-card { background: white; padding: 20px; border-radius: 10px; border-left: 4px solid var(--accent); margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .hadith-header { display: flex; justify-content: space-between; font-weight: bold; color: var(--accent); font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
-        .hadith-ar { font-size: 20px; line-height: 1.8; text-align: right; direction: rtl; font-family: "Amiri", "Traditional Arabic", serif; color: #0f172a; margin-bottom: 15px; background: #fafafa; padding: 10px; border-radius: 6px; }
-        .hadith-en { font-size: 15px; line-height: 1.6; color: #334155; }
-        .narrator { font-weight: 600; color: #1e293b; margin-bottom: 5px; }
+        /* Breadcrumb */
+        .breadcrumb { max-width: 1100px; margin: 15px auto 0; padding: 0 20px; font-size: 14px; color: var(--text-muted); }
+        .breadcrumb span { cursor: pointer; }
+        .breadcrumb span:hover { color: var(--primary); text-decoration: underline; }
 
+        /* Main Container */
+        main { max-width: 1100px; width: 100%; margin: 20px auto; padding: 0 20px; flex: 1; }
+
+        /* Search Bar */
+        .search-box { width: 100%; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-size: 16px; outline: none; margin-bottom: 25px; box-shadow: var(--shadow); }
+        .search-box:focus { border-color: var(--primary); }
+
+        /* Grid / Books View */
+        .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .book-card { background: var(--card-bg); padding: 22px; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between; }
+        .book-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .book-title-ar { font-family: 'Amiri', serif; font-size: 22px; color: var(--primary); text-align: right; margin-bottom: 5px; }
+        .book-title-en { font-size: 18px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
+        .book-author { font-size: 13px; color: var(--text-muted); }
+
+        /* Hadith List View */
+        .chapter-header { background: var(--primary-light); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 20px; text-align: center; }
+        .chapter-title-ar { font-family: 'Amiri', serif; font-size: 24px; color: var(--primary); margin-bottom: 5px; }
+        .chapter-title-en { font-size: 16px; font-weight: 600; color: var(--text-main); }
+
+        .hadith-card { background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px; box-shadow: var(--shadow); position: relative; }
+        .hadith-meta { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 18px; font-size: 13px; font-weight: 600; color: var(--accent); }
+        .hadith-ar { font-family: 'Amiri', serif; font-size: 24px; line-height: 2.2; text-align: right; direction: rtl; color: var(--text-main); margin-bottom: 20px; }
+        .hadith-en { font-size: 15px; line-height: 1.7; color: var(--text-main); }
+        .narrator { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+
+        .hadith-actions { display: flex; gap: 10px; margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 12px; justify-content: flex-end; }
+        .action-btn { background: none; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+        .action-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Controls */
         .hidden { display: none !important; }
-        .loading { text-align: center; padding: 40px; color: #64748b; font-size: 16px; }
+        .loading { text-align: center; padding: 40px; font-size: 18px; color: var(--text-muted); }
+        .load-more-btn { display: block; width: 100%; padding: 14px; margin: 20px 0 40px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; text-align: center; }
+        .load-more-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .hadith-ar { font-size: 20px; line-height: 1.9; }
+            .books-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📚 Hadis Kutubxonasi</h1>
-    <div class="breadcrumb" id="breadcrumb" onclick="goHome()">Bosh sahifa</div>
+    <div class="header-container">
+        <div class="logo" onclick="goHome()">📖 Hadislar Portali</div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Tungi rejim</button>
+    </div>
 </header>
 
+<div class="breadcrumb" id="breadcrumb">
+    <span onclick="goHome()">Bosh sahifa</span>
+</div>
+
 <main>
-    <!-- KITOBLAR RO'YXATI -->
+    <!-- Barcha Kitoblar Sahifasi -->
     <section id="viewBooks">
-        <h2 style="margin-bottom: 15px;">Kitobni tanlang</h2>
-        <div class="grid" id="booksGrid"></div>
+        <h2 style="margin-bottom: 20px; font-size: 22px;">Canonical Hadis Kitoblari</h2>
+        <div class="books-grid" id="booksGrid"></div>
     </section>
 
-    <!-- HADISLAR SAHIFASI -->
+    <!-- Hadislar va Boblar Sahifasi -->
     <section id="viewHadiths" class="hidden">
-        <input type="text" id="searchInput" class="search-box" placeholder="Hadis matni yoki raqamidan izlash..." oninput="filterHadiths()">
-        <h2 id="selectedBookTitle" style="margin-bottom: 15px;">Hadislar</h2>
+        <input type="text" id="searchInput" class="search-box" placeholder="Hadis matni yoki raqami bo'yicha izlash..." oninput="filterHadiths()">
+        
+        <div id="bookInfo" style="margin-bottom: 20px;">
+            <h1 id="selectedBookTitle" style="font-size: 26px; color: var(--primary);"></h1>
+            <p id="totalCount" style="color: var(--text-muted); font-size: 14px; margin-top: 4px;"></p>
+        </div>
+
         <div id="hadithsList"></div>
+        <button id="loadMoreBtn" class="load-more-btn hidden" onclick="loadMore()">Ko'proq ko'rsatish</button>
     </section>
 
-    <div id="loading" class="loading hidden">Kitob yuklanmoqda...</div>
+    <div id="loading" class="loading hidden">Yuklanmoqda...</div>
 </main>
 
 <script>
-    // Repozitordagi fayllarning aniq papka yo'llari
+    // 17 ta asosiy kitoblar yo'li (AhmedBaset/hadith-json manbasiga mos holda)
     const books = [
-        // 9 ta Asosiy Kitob
-        { name: "Sahih al-Bukhari", file: "db/by_book/the_9_books/bukhari.json" },
-        { name: "Sahih Muslim", file: "db/by_book/the_9_books/muslim.json" },
-        { name: "Sunan Abi Dawud", file: "db/by_book/the_9_books/abudawud.json" },
-        { name: "Jami` at-Tirmidhi", file: "db/by_book/the_9_books/tirmidhi.json" },
-        { name: "Sunan an-Nasa'i", file: "db/by_book/the_9_books/nasai.json" },
-        { name: "Sunan Ibn Majah", file: "db/by_book/the_9_books/ibnmajah.json" },
-        { name: "Muwatta Malik", file: "db/by_book/the_9_books/malik.json" },
-        { name: "Musnad Ahmad", file: "db/by_book/the_9_books/ahmed.json" },
-        { name: "Sunan ad-Darimi", file: "db/by_book/the_9_books/darimi.json" },
-        
-        // Qirq Hadislar
-        { name: "Forty Hadith Nawawi", file: "db/by_book/forties/nawawi40.json" },
-        { name: "Forty Hadith Qudsi", file: "db/by_book/forties/qudsi40.json" },
-        { name: "Forty Hadith Shah Waliullah", file: "db/by_book/forties/shahwaliullah40.json" },
-
-        // Boshqa Kitoblar
-        { name: "Riyad as-Salihin", file: "db/by_book/other_books/riyad_assalihin.json" },
-        { name: "Al-Adab Al-Mufrad", file: "db/by_book/other_books/aladab_almufrad.json" },
-        { name: "Bulugh al-Maram", file: "db/by_book/other_books/bulugh_almaram.json" },
-        { name: "Mishkat al-Masabih", file: "db/by_book/other_books/mishkat_almasabih.json" },
-        { name: "Shamail al-Muhammadiyah", file: "db/by_book/other_books/shamail_muhammadiyah.json" }
+        { nameEn: "Sahih al-Bukhari", nameAr: "صحيح البخاري", file: "db/by_book/the_9_books/bukhari.json" },
+        { nameEn: "Sahih Muslim", nameAr: "صحيح مسلم", file: "db/by_book/the_9_books/muslim.json" },
+        { nameEn: "Sunan Abi Dawud", nameAr: "سنن أبي داود", file: "db/by_book/the_9_books/abudawud.json" },
+        { nameEn: "Jami` at-Tirmidhi", nameAr: "جامع الترمذي", file: "db/by_book/the_9_books/tirmidhi.json" },
+        { nameEn: "Sunan an-Nasa'i", nameAr: "سنن النسائي", file: "db/by_book/the_9_books/nasai.json" },
+        { nameEn: "Sunan Ibn Majah", nameAr: "سنن ابن ماجه", file: "db/by_book/the_9_books/ibnmajah.json" },
+        { nameEn: "Muwatta Malik", nameAr: "موطأ مالك", file: "db/by_book/the_9_books/malik.json" },
+        { nameEn: "Musnad Ahmad", nameAr: "مسند أحمد", file: "db/by_book/the_9_books/ahmed.json" },
+        { nameEn: "Sunan ad-Darimi", nameAr: "سنن الدارمي", file: "db/by_book/the_9_books/darimi.json" },
+        { nameEn: "Riyad as-Salihin", nameAr: "رياض الصالحين", file: "db/by_book/other_books/riyad_assalihin.json" },
+        { nameEn: "Shamail al-Muhammadiyah", nameAr: "الشمائل المحمدية", file: "db/by_book/other_books/shamail_muhammadiyah.json" },
+        { nameEn: "Bulugh al-Maram", nameAr: "بلوغ المرام", file: "db/by_book/other_books/bulugh_almaram.json" },
+        { nameEn: "Al-Adab Al-Mufrad", nameAr: "الأدب المفرد", file: "db/by_book/other_books/aladab_almufrad.json" },
+        { nameEn: "Mishkat al-Masabih", nameAr: "مشكاة المصابيح", file: "db/by_book/other_books/mishkat_almasabih.json" },
+        { nameEn: "Forty Hadith Nawawi", nameAr: "الأربعون النووية", file: "db/by_book/forties/nawawi40.json" },
+        { nameEn: "Forty Hadith Qudsi", nameAr: "الأربعون القدسية", file: "db/by_book/forties/qudsi40.json" },
+        { nameEn: "Forty Hadith Shah Waliullah", nameAr: "أربعون الشاه ولي الله", file: "db/by_book/forties/shahwaliullah40.json" }
     ];
 
     let currentHadiths = [];
+    let filteredHadiths = [];
+    let displayedCount = 0;
+    const PAGE_SIZE = 30; // Bir martada 30 tadan yuklaydi
 
     function init() {
         const grid = document.getElementById('booksGrid');
@@ -93,11 +158,14 @@
         
         books.forEach(book => {
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = 'book-card';
             card.onclick = () => loadBook(book);
             card.innerHTML = `
-                <h3>${book.name}</h3>
-                <p>Hadislarni o'qish uchun bosing ➔</p>
+                <div>
+                    <div class="book-title-ar">${book.nameAr}</div>
+                    <div class="book-title-en">${book.nameEn}</div>
+                </div>
+                <div class="book-author">Hadislarni ko'rish ➔</div>
             `;
             grid.appendChild(card);
         });
@@ -105,73 +173,108 @@
 
     async function loadBook(book) {
         showLoading(true);
-        document.getElementById('selectedBookTitle').innerText = book.name;
+        document.getElementById('selectedBookTitle').innerText = book.nameEn + " (" + book.nameAr + ")";
 
         try {
             const res = await fetch(book.file);
-            if (!res.ok) throw new Error("Fayl topilmadi");
+            if (!res.ok) throw new Error("Faylni yuklab bo'lmadi");
             const data = await res.json();
 
-            currentHadiths = Array.isArray(data) ? data : (data.hadiths || Object.values(data));
+            // JSON ma'lumotlarini olish (metadatalardan tozalab)
+            const rawHadiths = data.hadiths || (Array.isArray(data) ? data : Object.values(data));
             
+            // Har bir hadisga to'g'ri kitob ichki raqamini (idInBook) tasdiqlaymiz
+            currentHadiths = rawHadiths.map((item, index) => ({
+                ...item,
+                bookHadithNo: item.idInBook || (index + 1)
+            }));
+            
+            filteredHadiths = currentHadiths;
+            displayedCount = 0;
+
+            document.getElementById('totalCount').innerText = `Jami hadislar: ${currentHadiths.length} ta`;
+
             showView('viewHadiths');
-            updateBreadcrumb([book.name]);
-            renderHadiths(currentHadiths.slice(0, 50)); // Dastlabki 50 tasini ko'rsatadi
+            updateBreadcrumb([book.nameEn]);
+            
+            document.getElementById('hadithsList').innerHTML = '';
+            loadMore();
         } catch (err) {
-            alert("Xatolik: Fayl yuklanmadi. Fayl yo'lini tekshiring.");
+            alert("Xatolik: JSON fayli topilmadi. Fayl yo'li to'g'riligini tekshiring.");
         } finally {
             showLoading(false);
         }
     }
 
-    function renderHadiths(list) {
+    function renderNextBatch(list) {
         const container = document.getElementById('hadithsList');
-        container.innerHTML = '';
 
-        if (list.length === 0) {
-            container.innerHTML = '<p class="loading">Hech qanday hadis topilmadi.</p>';
-            return;
-        }
-
-        list.forEach((item, idx) => {
+        list.forEach(item => {
             const card = document.createElement('div');
             card.className = 'hadith-card';
             
-            const num = item.id || (idx + 1);
             const arabicText = item.arabic || '';
             const englishText = item.english?.text || (typeof item.english === 'string' ? item.english : '');
             const narrator = item.english?.narrator || '';
 
             card.innerHTML = `
-                <div class="hadith-header">
-                    <span>Hadis #${num}</span>
-                    ${item.chapterId ? `<span>Bo'lim ID: ${item.chapterId}</span>` : ''}
+                <div class="hadith-meta">
+                    <span>Hadis #${item.bookHadithNo}</span>
+                    <span>Chapter: ${item.chapterId || 1}</span>
                 </div>
                 ${arabicText ? `<div class="hadith-ar">${arabicText}</div>` : ''}
                 <div class="hadith-en">
                     ${narrator ? `<div class="narrator">${narrator}</div>` : ''}
                     <div>${englishText}</div>
                 </div>
+                <div class="hadith-actions">
+                    <button class="action-btn" onclick="copyHadith('${item.bookHadithNo}', \`${escapeQuotes(englishText)}\`)">📋 Nusxalash</button>
+                </div>
             `;
             container.appendChild(card);
         });
+
+        const loadBtn = document.getElementById('loadMoreBtn');
+        if (displayedCount < filteredHadiths.length) {
+            loadBtn.classList.remove('hidden');
+        } else {
+            loadBtn.classList.add('hidden');
+        }
+    }
+
+    function loadMore() {
+        const nextBatch = filteredHadiths.slice(displayedCount, displayedCount + PAGE_SIZE);
+        displayedCount += nextBatch.length;
+        renderNextBatch(nextBatch);
     }
 
     function filterHadiths() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        document.getElementById('hadithsList').innerHTML = '';
+        displayedCount = 0;
+
         if (!query) {
-            renderHadiths(currentHadiths.slice(0, 50));
-            return;
+            filteredHadiths = currentHadiths;
+        } else {
+            filteredHadiths = currentHadiths.filter(item => {
+                const ar = (item.arabic || '').toLowerCase();
+                const en = (item.english?.text || '').toLowerCase();
+                const num = String(item.bookHadithNo);
+                return ar.includes(query) || en.includes(query) || num === query;
+            });
         }
 
-        const filtered = currentHadiths.filter(item => {
-            const ar = (item.arabic || '').toLowerCase();
-            const en = (item.english?.text || '').toLowerCase();
-            const num = String(item.id || '');
-            return ar.includes(query) || en.includes(query) || num.includes(query);
-        });
+        document.getElementById('totalCount').innerText = `Topildi: ${filteredHadiths.length} ta hadis`;
+        loadMore();
+    }
 
-        renderHadiths(filtered.slice(0, 50));
+    function copyHadith(num, text) {
+        navigator.clipboard.writeText(`Hadis #${num}\n\n${text}`);
+        alert(`Hadis #${num} nusxalandi!`);
+    }
+
+    function escapeQuotes(str) {
+        return str ? str.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, ' ') : '';
     }
 
     function showView(viewId) {
@@ -190,10 +293,16 @@
     function updateBreadcrumb(paths) {
         const bc = document.getElementById('breadcrumb');
         if (paths.length === 0) {
-            bc.innerHTML = '<span>Bosh sahifa</span>';
+            bc.innerHTML = '<span onclick="goHome()">Bosh sahifa</span>';
         } else {
             bc.innerHTML = '<span onclick="goHome()">Bosh sahifa</span> / ' + paths.join(' / ');
         }
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeBtn').innerText = isDark ? '🌙 Tungi rejim' : '☀️ Kunduzgi rejim';
     }
 
     function showLoading(show) {
